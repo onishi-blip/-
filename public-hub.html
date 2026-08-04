@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>自己理解フィールドガイド | コンテンツ一覧</title>
+<style>
+  :root {
+    --paper: #eef1e6;
+    --card: #fbfbf5;
+    --ink: #232b22;
+    --ink-soft: #5c6656;
+    --line: #cfd6c2;
+    --accent-h: 152;
+    --accent: hsl(var(--accent-h) 32% 28%);
+    --accent-soft: hsl(var(--accent-h) 32% 90%);
+    --tag-user: hsl(195 32% 90%);
+    --tag-user-ink: hsl(195 40% 28%);
+    --shadow: rgba(35, 43, 34, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14170f;
+      --card: #1b2016;
+      --ink: #e7ead9;
+      --ink-soft: #a3ab94;
+      --line: #333c29;
+      --accent: hsl(var(--accent-h) 30% 66%);
+      --accent-soft: hsl(var(--accent-h) 26% 20%);
+      --tag-user: hsl(195 26% 20%);
+      --tag-user-ink: hsl(195 45% 72%);
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14170f;
+    --card: #1b2016;
+    --ink: #e7ead9;
+    --ink-soft: #a3ab94;
+    --line: #333c29;
+    --accent: hsl(var(--accent-h) 30% 66%);
+    --accent-soft: hsl(var(--accent-h) 26% 20%);
+    --tag-user: hsl(195 26% 20%);
+    --tag-user-ink: hsl(195 45% 72%);
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+  :root[data-theme="light"] {
+    --paper: #eef1e6;
+    --card: #fbfbf5;
+    --ink: #232b22;
+    --ink-soft: #5c6656;
+    --line: #cfd6c2;
+    --accent: hsl(var(--accent-h) 32% 28%);
+    --accent-soft: hsl(var(--accent-h) 32% 90%);
+    --tag-user: hsl(195 32% 90%);
+    --tag-user-ink: hsl(195 40% 28%);
+    --shadow: rgba(35, 43, 34, 0.1);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 20px 64px;
+  }
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 16px;
+    height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+  h1 {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.5;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .lead {
+    line-height: 1.9;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin: 0 0 40px;
+  }
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  a.item-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 10px 26px var(--shadow);
+    padding: 22px 22px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: transform 0.12s ease, border-color 0.15s ease;
+  }
+  a.item-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  a.item-card:active { transform: translateY(0); }
+  a.item-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .item-icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .item-body { flex: 1; min-width: 0; }
+  .item-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .item-title {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+    font-weight: 700;
+    font-size: 1.08rem;
+  }
+  .item-tag {
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+  .item-tag.user {
+    background: var(--tag-user);
+    color: var(--tag-user-ink);
+  }
+  .item-desc {
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .item-arrow {
+    flex-shrink: 0;
+    color: var(--ink-soft);
+    font-size: 1.2rem;
+  }
+  .footer-note {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    margin-top: 36px;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="eyebrow">自己理解フィールドガイド</div>
+  <h1>コンテンツ一覧</h1>
+  <p class="lead">
+    行動特性の自己理解にまつわるコンテンツです。目的に合わせて選んでください。
+  </p>
+
+  <div class="card-list">
+
+    <a class="item-card" href="self-diagnosis-prototype.html">
+      <div class="item-icon">🧭</div>
+      <div class="item-body">
+        <div class="item-head">
+          <span class="item-title">自己理解診断ノート</span>
+          <span class="item-tag user">求職者向け</span>
+        </div>
+        <p class="item-desc">58個の質問に答えて、7つの行動特性タイプと「転職タイミング逃し度」を診断します。</p>
+      </div>
+      <div class="item-arrow">→</div>
+    </a>
+
+    <a class="item-card" href="seven-types-guide.html">
+      <div class="item-icon">📖</div>
+      <div class="item-body">
+        <div class="item-head">
+          <span class="item-title">7つの行動特性タイプ</span>
+          <span class="item-tag user">求職者向け</span>
+        </div>
+        <p class="item-desc">7タイプそれぞれの無意識の思考傾向・向いている環境・転職活動時の注意点をまとめた一覧です。</p>
+      </div>
+      <div class="item-arrow">→</div>
+    </a>
+
+  </div>
+
+  <div class="footer-note">※本ページは簡易版のパイロットツールです</div>
+
+</div>
+</body>
+</html>

@@ -314,6 +314,25 @@
     box-shadow: 0 6px 16px -10px var(--shadow);
   }
   .choice-btn:active { transform: scale(0.99); }
+  .choice-btn.selected {
+    border-color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .back-btn {
+    display: block;
+    margin: 4px auto 0;
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 8px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .back-btn:hover { color: var(--accent); }
+  .back-btn.hidden { visibility: hidden; }
   .likert-dots {
     display: flex;
     gap: 4px;
@@ -688,6 +707,15 @@
     margin-bottom: 20px;
     line-height: 1.7;
   }
+  .cta-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.84rem;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .cta-link:hover { color: var(--accent); }
   .footer-note {
     text-align: center;
     font-size: 0.7rem;
@@ -797,6 +825,7 @@
     </div>
     <div class="question-text" id="question-text"></div>
     <div id="choice-list"></div>
+    <button class="back-btn" id="btn-back">← 前の設問に戻る</button>
   </div>
 
   <!-- 結果画面 -->
@@ -832,6 +861,7 @@
       <div class="cta-lead">この強みを、次の一歩にどう活かすか。</div>
       <div class="cta-sub">その具体的な活かし方は、キャリアコーチングの知見を持つキャリアアドバイザーとの面談で、あなたに合った形を一緒に言語化していきます。</div>
       <button class="primary" id="btn-cta">面談で相談する</button>
+      <a class="cta-link" href="seven-types-guide.html">7つの行動特性タイプを見てみる →</a>
     </div>
     <div class="footer-note">※本診断は簡易版のパイロットツールです</div>
   </div>
@@ -940,6 +970,7 @@
 
   var currentIndex = 0;
   var scores = { A: 0, B: 0, C: 0, D: 0, W: 0 };
+  var answers = [];
 
   var screenIntro = document.getElementById("screen-intro");
   var screenIntake = document.getElementById("screen-intake");
@@ -1002,17 +1033,26 @@
       }
       var text = document.createElement("span");
       text.textContent = label;
+      btn.classList.toggle("selected", answers[currentIndex] === i);
       btn.appendChild(dots);
       btn.appendChild(text);
       btn.addEventListener("click", function () { answer(i); });
       choiceList.appendChild(btn);
     });
+
+    var backBtn = document.getElementById("btn-back");
+    backBtn.classList.toggle("hidden", currentIndex === 0);
   }
 
   function answer(rawValue) {
     var q = questions[currentIndex];
+    if (typeof answers[currentIndex] === "number") {
+      var prevEffective = q.reverse ? (4 - answers[currentIndex]) : answers[currentIndex];
+      scores[q.axis] -= prevEffective;
+    }
     var effective = q.reverse ? (4 - rawValue) : rawValue;
     scores[q.axis] += effective;
+    answers[currentIndex] = rawValue;
     currentIndex += 1;
     if (currentIndex >= questions.length) {
       tickEls.forEach(function (t) { t.classList.add("filled"); });
@@ -1021,6 +1061,14 @@
       renderQuestion();
     }
   }
+
+  function goBack() {
+    if (currentIndex === 0) { return; }
+    currentIndex -= 1;
+    renderQuestion();
+  }
+
+  document.getElementById("btn-back").addEventListener("click", goBack);
 
   function determineType() {
     var vec = [
@@ -1263,6 +1311,7 @@
 
     currentIndex = 0;
     scores = { A: 0, B: 0, C: 0, D: 0, W: 0 };
+    answers = [];
     renderQuestion();
     showScreen(screenQuiz);
   });

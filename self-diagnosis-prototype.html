@@ -1297,11 +1297,62 @@
     }
   }
 
+  // 社内(CA)向けの職種提案。求職者向けの画面には一切表示しない。
+  // タイプ名の固定対応ではなく、実際の4軸スコア(社交性/柔軟性/主体性/身体性、各0-100)と
+  // 各職種の理想プロフィールとの近さ(ユークリッド距離)で総合的に判定する。
+  var JOB_CATALOG = [
+    // 黄色(未経験から挑戦しやすい職種) — 営業/販売/サービス業/事務職/製造業/施工管理/エンジニアの7区分
+    { name: "営業(法人・個人、IT/人材/広告/不動産/自動車など)", pool: "yellow", vector: [85, 70, 75, 50] },
+    { name: "販売(店舗販売、アパレル・家電・食品など)", pool: "yellow", vector: [75, 55, 40, 60] },
+    { name: "サービス業(接客、カスタマーサポート、美容関連)", pool: "yellow", vector: [75, 65, 35, 70] },
+    { name: "事務職(経理事務、一般事務、営業事務、人事アシスタント)", pool: "yellow", vector: [35, 25, 35, 20] },
+    { name: "製造業(生産、品質管理)", pool: "yellow", vector: [20, 20, 30, 85] },
+    { name: "施工管理(品質・安全・工程管理)", pool: "yellow", vector: [55, 70, 75, 80] },
+    { name: "エンジニア(インフラ、社内システム、ヘルプデスクなど)", pool: "yellow", vector: [25, 50, 65, 20] },
+    // 実は向いている(このチャートには載っていない専門職・医療職などを含む)
+    { name: "医療・介護・保育系(医療事務、介護職、保育士)", pool: "hidden", vector: [80, 55, 35, 65] },
+    { name: "士業事務所の専門アシスタント(税理士・社労士事務所など)", pool: "hidden", vector: [25, 20, 30, 15] },
+    { name: "リサーチ・コンサル系専門職(データ分析、マーケティングリサーチ)", pool: "hidden", vector: [25, 55, 80, 15] },
+    { name: "手に職系の技術職(自動車整備士、調理師、美容師など)", pool: "hidden", vector: [35, 25, 45, 90] },
+    { name: "スポーツ・フィットネス業界(パーソナルトレーナーなど)", pool: "hidden", vector: [80, 70, 70, 90] },
+    { name: "物流・工場の現場責任者(倉庫管理、生産ライン長)", pool: "hidden", vector: [50, 65, 80, 75] },
+    { name: "医療・福祉系のコーディネーター職(ケアマネジャーなど)", pool: "hidden", vector: [75, 50, 30, 50] },
+    { name: "IT開発エンジニア(業務アプリ、社内システムなど)", pool: "hidden", vector: [20, 45, 55, 15] },
+    { name: "クリエイティブ職(Webデザイナー、動画編集者)", pool: "hidden", vector: [40, 60, 65, 25] }
+  ];
+
+  function rankJobs(scoreVec, pool, topN) {
+    return JOB_CATALOG
+      .filter(function (j) { return j.pool === pool; })
+      .map(function (j) {
+        var dist = Math.sqrt(
+          Math.pow(scoreVec[0] - j.vector[0], 2) +
+          Math.pow(scoreVec[1] - j.vector[1], 2) +
+          Math.pow(scoreVec[2] - j.vector[2], 2) +
+          Math.pow(scoreVec[3] - j.vector[3], 2)
+        );
+        return { name: j.name, dist: dist };
+      })
+      .sort(function (a, b) { return a.dist - b.dist; })
+      .slice(0, topN)
+      .map(function (j) { return j.name; });
+  }
+
+  function getJobFitNote(scoreVec) {
+    var yellowPicks = rankJobs(scoreVec, "yellow", 2);
+    var hiddenPicks = rankJobs(scoreVec, "hidden", 2);
+    return "【未経験可(黄)】" + yellowPicks.join("、") + " / 【実は向いている】" + hiddenPicks.join("、");
+  }
+
   function submitToSheet(type) {
     if (!SHEET_WEBHOOK_URL) { return; }
     var wantToPercent = Math.round((scores.W / axisMaxScore.W) * 100);
     var riskPercent = 100 - wantToPercent;
     var caDirection = (CA_TYPE_NOTE[type.name] || "") + " " + getCaRiskNote(riskPercent);
+    var socialPercent = Math.round((scores.A / axisMaxScore.A) * 100);
+    var flexPercent = Math.round((scores.B / axisMaxScore.B) * 100);
+    var agencyPercent = Math.round((scores.C / axisMaxScore.C) * 100);
+    var physicalPercent = Math.round((scores.D / axisMaxScore.D) * 100);
     var payload = {
       name: respondent.name,
       age: respondent.age,
@@ -1309,11 +1360,12 @@
       prefecture: respondent.prefecture,
       type: type.name,
       riskPercent: riskPercent,
-      socialPercent: Math.round((scores.A / axisMaxScore.A) * 100),
-      flexPercent: Math.round((scores.B / axisMaxScore.B) * 100),
-      agencyPercent: Math.round((scores.C / axisMaxScore.C) * 100),
-      physicalPercent: Math.round((scores.D / axisMaxScore.D) * 100),
+      socialPercent: socialPercent,
+      flexPercent: flexPercent,
+      agencyPercent: agencyPercent,
+      physicalPercent: physicalPercent,
       caDirection: caDirection,
+      jobFit: getJobFitNote([socialPercent, flexPercent, agencyPercent, physicalPercent]),
       timestamp: new Date().toISOString()
     };
     fetch(SHEET_WEBHOOK_URL, {

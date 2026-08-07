@@ -488,6 +488,22 @@
     font-size: 0.98rem;
     line-height: 2;
   }
+  .share-btn {
+    display: block;
+    width: 100%;
+    margin: 4px 0 0;
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.1s ease;
+  }
+  .share-btn:hover { filter: brightness(1.05); }
+  .share-btn:active { transform: scale(0.99); }
   .secondary-hint {
     display: flex;
     align-items: center;
@@ -833,6 +849,7 @@
     <div class="result-badge" id="result-badge"></div>
     <div class="result-type-name" id="result-type-name"></div>
     <div class="result-desc" id="result-desc"></div>
+    <button class="share-btn" id="btn-share">📤 診断結果をシェアする</button>
 
     <div class="secondary-hint">
       <div class="secondary-icon" id="secondary-icon"></div>
@@ -1232,10 +1249,13 @@
     document.getElementById("wantto-note").textContent = note;
   }
 
+  var lastResultType = null;
+
   function showResult() {
     var result = determineType();
     var type = result.primary;
     var secType = result.secondary;
+    lastResultType = type;
     document.getElementById("screen-result").style.setProperty("--type-hue", type.hue);
     document.getElementById("screen-result").style.setProperty("--secondary-hue", secType.hue);
     document.getElementById("result-badge").innerHTML = '<img src="' + type.img + '" alt="' + type.name + '">';
@@ -1325,6 +1345,18 @@
       window.location.href = LSTEP_ADD_FRIEND_URL;
     } else {
       alert("面談予約フォームへの導線をここに設置します。");
+    }
+  });
+
+  document.getElementById("btn-share").addEventListener("click", function () {
+    if (!lastResultType) { return; }
+    var shareText = "自己理解診断で「" + lastResultType.name + "」タイプという結果が出ました。あなたはどのタイプ?";
+    var shareUrl = location.href.split("#")[0].split("?")[0];
+    if (navigator.share) {
+      navigator.share({ text: shareText, url: shareUrl }).catch(function () {});
+    } else {
+      var lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(shareText + "\n" + shareUrl);
+      window.open(lineUrl, "_blank");
     }
   });
 })();

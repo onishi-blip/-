@@ -1277,10 +1277,31 @@
   // Googleスプレッドシート連携: SHEET_WEBHOOK_URLにApps ScriptのWebアプリURLを設定すると送信されます。
   var SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxZWG0JnZoVnjqxlPgdneGHoWoVycnwjAxvfp-2rEFl8sKZHpBs2Od1DdokQgWgPTQDPQ/exec";
 
+  var CA_TYPE_NOTE = {
+    "突撃ライオン型": "結論を急ぎやすいタイプ。鼓舞するより「ゴールの解像度を上げる」ことに時間を使う。",
+    "寄り添いイルカ型": "同調しすぎて本音が出にくいタイプ。安心できる関係を作った上で、繰り返し本音を促す。",
+    "仕切りグマ型": "自分の判断を優先しがちなタイプ。指示ではなく「一緒に検証するパートナー」というスタンスで。",
+    "コツコツふくろう型": "変化の提案に防御的になりやすいタイプ。小さな情報・具体例から少しずつ視野を広げる。",
+    "考えるキツネ型": "納得するまで動かない「評論家」状態になりやすいタイプ。仮説として一歩踏み出す提案を。",
+    "職人ゾウ型": "変化を「今までの否定」と感じやすいタイプ。積み重ねを承認した上で、接続の仕方で変化を提示する。",
+    "調整うさぎ型": "アドバイザーに決めてもらおうとしがちなタイプ。意思決定の主導権を本人に戻す問いかけを。"
+  };
+
+  function getCaRiskNote(riskPercent) {
+    if (riskPercent >= 50) {
+      return "見逃しサイン(高)。安心して本音を話せる場作りを最優先。焦らせるとHave to状態のまま次を選んでしまうリスクに注意。";
+    } else if (riskPercent >= 30) {
+      return "変化のサイン(中)。何がHave to化しているのかを具体的に言語化するサポートを最優先に。";
+    } else {
+      return "低リスク帯。急がせる必要はないが、今の延長線上の成長で満足していないか確認する軽い接続でよい。";
+    }
+  }
+
   function submitToSheet(type) {
     if (!SHEET_WEBHOOK_URL) { return; }
     var wantToPercent = Math.round((scores.W / axisMaxScore.W) * 100);
     var riskPercent = 100 - wantToPercent;
+    var caDirection = (CA_TYPE_NOTE[type.name] || "") + " " + getCaRiskNote(riskPercent);
     var payload = {
       name: respondent.name,
       age: respondent.age,
@@ -1292,6 +1313,7 @@
       flexPercent: Math.round((scores.B / axisMaxScore.B) * 100),
       agencyPercent: Math.round((scores.C / axisMaxScore.C) * 100),
       physicalPercent: Math.round((scores.D / axisMaxScore.D) * 100),
+      caDirection: caDirection,
       timestamp: new Date().toISOString()
     };
     fetch(SHEET_WEBHOOK_URL, {

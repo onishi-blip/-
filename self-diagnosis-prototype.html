@@ -830,7 +830,7 @@
     <hr class="divider">
     <div class="cta-block">
       <div class="cta-lead">この強みを、次の一歩にどう活かすか。</div>
-      <div class="cta-sub">具体的な活かし方は、キャリアアドバイザーとの面談でご相談いただけます。</div>
+      <div class="cta-sub">その具体的な活かし方は、キャリアコーチングの知見を持つキャリアアドバイザーとの面談で、あなたに合った形を一緒に言語化していきます。</div>
       <button class="primary" id="btn-cta">面談で相談する</button>
     </div>
     <div class="footer-note">※本診断は簡易版のパイロットツールです</div>
@@ -1162,11 +1162,11 @@
     var wantToPercent = Math.round((scores.W / axisMaxScore.W) * 100);
     var riskPercent = 100 - wantToPercent;
     var label, note, riskClass;
-    if (riskPercent >= 60) {
+    if (riskPercent >= 50) {
       riskClass = "risk-high";
       label = "見逃しサインが出ています";
       note = "求められることに応える動きが中心になっているようです。知らず知らずのうちに、動くべきタイミングを逃してしまっているかもしれません。";
-    } else if (riskPercent >= 40) {
+    } else if (riskPercent >= 30) {
       riskClass = "risk-mid";
       label = "変化のサインに注意";
       note = "自分の意志で動けている部分と、求められて動いている部分が混在しているようです。このバランスが崩れかけているタイミングこそ、転職を考えるサインであることが多いです。";
@@ -1220,6 +1220,10 @@
       prefecture: respondent.prefecture,
       type: type.name,
       riskPercent: riskPercent,
+      socialPercent: Math.round((scores.A / axisMaxScore.A) * 100),
+      flexPercent: Math.round((scores.B / axisMaxScore.B) * 100),
+      agencyPercent: Math.round((scores.C / axisMaxScore.C) * 100),
+      physicalPercent: Math.round((scores.D / axisMaxScore.D) * 100),
       timestamp: new Date().toISOString()
     };
     fetch(SHEET_WEBHOOK_URL, {

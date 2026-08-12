@@ -604,6 +604,35 @@
     font-size: 0.98rem;
     line-height: 2;
   }
+  .personal-insight {
+    background: hsl(var(--type-hue, 152) 55% 96%);
+    border: 1px solid hsl(var(--type-hue, 152) 40% 75%);
+    border-radius: 12px;
+    padding: 18px 18px 20px;
+    margin: 4px 0 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .personal-insight { background: hsl(var(--type-hue, 152) 30% 17%); border-color: hsl(var(--type-hue, 152) 30% 32%); }
+  }
+  :root[data-theme="dark"] .personal-insight { background: hsl(var(--type-hue, 152) 30% 17%); border-color: hsl(var(--type-hue, 152) 30% 32%); }
+  :root[data-theme="light"] .personal-insight { background: hsl(var(--type-hue, 152) 55% 96%); border-color: hsl(var(--type-hue, 152) 40% 75%); }
+  .personal-insight-heading {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: hsl(var(--type-hue, 152) 45% 32%);
+    margin-bottom: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .personal-insight-heading { color: hsl(var(--type-hue, 152) 50% 78%); }
+  }
+  :root[data-theme="dark"] .personal-insight-heading { color: hsl(var(--type-hue, 152) 50% 78%); }
+  :root[data-theme="light"] .personal-insight-heading { color: hsl(var(--type-hue, 152) 45% 32%); }
+  .personal-insight-text {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.9;
+    color: var(--ink);
+  }
   .share-btn {
     display: block;
     width: 100%;
@@ -973,6 +1002,12 @@
     <div class="confetti-layer" id="confetti-layer"></div>
     <div class="result-type-name" id="result-type-name"></div>
     <div class="result-desc" id="result-desc"></div>
+
+    <div class="personal-insight">
+      <div class="personal-insight-heading">✨ あなただけの診断結果</div>
+      <p class="personal-insight-text" id="personal-insight-text"></p>
+    </div>
+
     <button class="share-btn" id="btn-share">📤 診断結果をシェアする</button>
 
     <div class="secondary-hint">
@@ -1373,6 +1408,46 @@
     document.getElementById("wantto-note").textContent = note;
   }
 
+  var INSIGHT_TEMPLATES = {
+    A: {
+      high: "人と関わる場面ほどエネルギーが湧いてくるタイプで(社交性{{p}}%)、無意識のうちに周囲を巻き込みながら物事を前に進めています。",
+      low: "一人で集中する時間にこそ力を発揮するタイプで(社交性{{p}}%)、常に人と関わり続ける環境では、気づかないうちに消耗しているかもしれません。",
+      mid: "人と関わることも一人で動くことも、状況に応じて自然に使い分けられる、社交性{{p}}%というバランス型です。"
+    },
+    B: {
+      high: "急な変化にもとっさに対応できるタイプで(柔軟性{{p}}%)、変化そのものを刺激として楽しめている可能性があります。",
+      low: "決まった手順の中でこそ安定した力を発揮するタイプで(柔軟性{{p}}%)、変化が続く環境では、気づかないうちに疲れを溜め込んでいるかもしれません。",
+      mid: "変化への対応力と安定志向のどちらにも偏りすぎない、柔軟性{{p}}%というバランスを持っています。"
+    },
+    C: {
+      high: "自分で判断し、自分の意思で動きたい気持ちが強いタイプで(主体性{{p}}%)、指示待ちの環境に置かれると、無意識のうちにやる気が下がっているかもしれません。",
+      low: "明確な指示や型があってこそ力を発揮しやすいタイプで(主体性{{p}}%)、急に大きな裁量を渡されると、かえって迷いが生まれやすいかもしれません。",
+      mid: "自分で決めることと、指示に沿って動くことのバランスを自然に取れる、主体性{{p}}%の特性です。"
+    },
+    D: {
+      high: "頭で考えるより先に体が動くタイプで(身体性{{p}}%)、じっと座っているだけの環境では、無意識のうちにエネルギーを持て余しているかもしれません。",
+      low: "頭を使ってじっくり考えることに力を発揮するタイプで(身体性{{p}}%)、体力的な負荷が大きい環境では、気づかないうちに消耗が大きくなっているかもしれません。",
+      mid: "体を動かすことと頭を使うことのどちらにも偏らない、身体性{{p}}%というバランス型です。"
+    }
+  };
+  var INSIGHT_LEAD_WORDS = ["特に、", "また、", "そして、", "加えて、"];
+
+  function buildPersonalInsight(vec) {
+    var axes = ["A", "B", "C", "D"];
+    var items = axes.map(function (axis, i) {
+      var percent = Math.round((vec[i] / 12) * 100);
+      var tier = percent >= 65 ? "high" : percent <= 35 ? "low" : "mid";
+      var sentence = INSIGHT_TEMPLATES[axis][tier].replace("{{p}}", percent);
+      return { axis: axis, percent: percent, distinctiveness: Math.abs(percent - 50), sentence: sentence };
+    });
+    items.sort(function (a, b) { return b.distinctiveness - a.distinctiveness; });
+    var paragraph = items.map(function (item, i) {
+      return INSIGHT_LEAD_WORDS[i] + item.sentence;
+    }).join("");
+    paragraph += " こうした無意識の行動パターンは、自分では当たり前すぎて気づきにくいものですが、次に選ぶ環境によって、力の発揮しやすさは大きく変わってきます。";
+    return paragraph;
+  }
+
   var lastResultType = null;
 
   function showResult() {
@@ -1388,6 +1463,7 @@
     document.getElementById("screen-flash").classList.remove("pulse");
     document.getElementById("result-type-name").textContent = type.name;
     document.getElementById("result-desc").textContent = type.desc;
+    document.getElementById("personal-insight-text").textContent = buildPersonalInsight(result.vec);
 
     document.getElementById("secondary-icon").innerHTML = '<img src="' + secType.img + '" alt="' + secType.name + '">';
     document.getElementById("secondary-name").textContent = secType.name;

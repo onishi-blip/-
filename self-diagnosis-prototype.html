@@ -1008,6 +1008,11 @@
       <p class="personal-insight-text" id="personal-insight-text"></p>
     </div>
 
+    <div class="personal-insight">
+      <div class="personal-insight-heading">👀 周りに与えている印象</div>
+      <p class="personal-insight-text" id="impression-insight-text"></p>
+    </div>
+
     <button class="share-btn" id="btn-share">📤 診断結果をシェアする</button>
 
     <div class="secondary-hint">
@@ -1448,6 +1453,41 @@
     return paragraph;
   }
 
+  var IMPRESSION_TEMPLATES = {
+    A: {
+      high: "「話しやすい」「一緒にいて楽しい」と好印象を持たれやすい一方、「落ち着きがない」「一人の時間を尊重してくれなさそう」と受け取られることもあります。",
+      low: "「物静かで落ち着いている」「聞き上手」という印象を持たれやすい一方、「何を考えているかわかりにくい」と受け取られることもあります。"
+    },
+    B: {
+      high: "「臨機応変で頼れる」という印象を持たれやすい一方、「言うことがコロコロ変わる」と受け取られることもあります。",
+      low: "「安定していて信頼できる」という印象を持たれやすい一方、「融通が利かない」と受け取られることもあります。"
+    },
+    C: {
+      high: "「頼りになるリーダー」という印象を持たれやすい一方、「自己主張が強い」「一人で先に進めてしまう」と受け取られることもあります。",
+      low: "「協調性がある」「素直」という印象を持たれやすい一方、「自分の意見がなさそう」と受け取られることもあります。"
+    },
+    D: {
+      high: "「エネルギッシュ」「行動力がある」という印象を持たれやすい一方、「落ち着きがない」と受け取られることもあります。",
+      low: "「冷静」「思慮深い」という印象を持たれやすい一方、「動きが鈍い」「やる気が見えない」と受け取られることもあります。"
+    }
+  };
+
+  function buildImpressionInsight(vec) {
+    var axes = ["A", "B", "C", "D"];
+    var picked = [];
+    axes.forEach(function (axis, i) {
+      var percent = Math.round((vec[i] / 12) * 100);
+      if (percent >= 65) { picked.push({ dist: percent - 50, text: IMPRESSION_TEMPLATES[axis].high }); }
+      else if (percent <= 35) { picked.push({ dist: 50 - percent, text: IMPRESSION_TEMPLATES[axis].low }); }
+    });
+    if (picked.length === 0) {
+      return "特定の特性が突出していないぶん、周囲からは「バランスが取れている」「合わせやすい」という印象を持たれやすいタイプです。裏を返すと「特徴がつかみにくい」と思われることもあるかもしれません。";
+    }
+    picked.sort(function (a, b) { return b.dist - a.dist; });
+    var lead = ["周囲からは、", "また、", "そして、"];
+    return picked.slice(0, 3).map(function (p, i) { return lead[i] + p.text; }).join("");
+  }
+
   var lastResultType = null;
 
   function showResult() {
@@ -1464,6 +1504,7 @@
     document.getElementById("result-type-name").textContent = type.name;
     document.getElementById("result-desc").textContent = type.desc;
     document.getElementById("personal-insight-text").textContent = buildPersonalInsight(result.vec);
+    document.getElementById("impression-insight-text").textContent = buildImpressionInsight(result.vec);
 
     document.getElementById("secondary-icon").innerHTML = '<img src="' + secType.img + '" alt="' + secType.name + '">';
     document.getElementById("secondary-name").textContent = secType.name;

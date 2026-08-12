@@ -1672,6 +1672,8 @@
       physicalPercent: physicalPercent,
       caDirection: caDirection,
       jobFit: getJobFitNote([socialPercent, flexPercent, agencyPercent, physicalPercent]),
+      personalInsight: buildPersonalInsight([socialPercent, flexPercent, agencyPercent, physicalPercent].map(function (p) { return p / 100 * 12; })),
+      impressionInsight: buildImpressionInsight([socialPercent, flexPercent, agencyPercent, physicalPercent].map(function (p) { return p / 100 * 12; })),
       timestamp: new Date().toISOString()
     };
     fetch(SHEET_WEBHOOK_URL, {
